@@ -1,0 +1,12 @@
+#!/exlibris/sfx_ver/sfx4_1/app/perl/bin/perl
+
+use strict;
+use File::Basename;
+
+my $dir = dirname($0);
+my $file = basename($0);
+   $file =~ s/\..*//g;
+my $params = "@ARGV";
+   $params =~ s/'/\\'/g;
+
+system("tcsh -c 'source $dir/../../home/.cshrc; $dir/$file.pl $params'");
