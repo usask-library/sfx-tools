@@ -227,7 +227,7 @@ while (<CURRENT>) {
 
     #print $OBJECT_ID . "\t" . $DateResolved . "\n";
 
-    ### 
+    ###
     my $resolveCount = scalar keys %Resolve;
 
     ### If this is a new entry in the export file (i.e. an object recently enabled in SFX)
