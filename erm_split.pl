@@ -17,7 +17,6 @@ use strict;
 
 use Getopt::Long;
 
-
 my $VERSION = 'SFX-Tools/3.22 ERM File Splitter';
 
 
@@ -31,17 +30,17 @@ my $ConfigFile = $Bin . '/sfx-tools.conf';
 ###
 ### Get command line options
 ###
-my $DEBUG  = 0;
+my $DEBUG = 0;
 my $Target = -1;
-my $Count  = -1;
+my $Count = -1;
 
 ### Allowable command line arguments
 my %options = (
-    'config'   => \$ConfigFile,
-    'target'   => \$Target,
-    'count'    => \$Count,
-    'debug'    => \$DEBUG
-  );
+    'config' => \$ConfigFile,
+    'target' => \$Target,
+    'count'  => \$Count,
+    'debug'  => \$DEBUG
+);
 GetOptions(\%options, 'config=s', 'target', 'count:5000', 'debug+');
 
 
@@ -55,15 +54,15 @@ my %Config = (
     'DEBUG_LEVEL'       => 0,
     'ERM_SPLIT'         => 'NONE',
     'ERM_SPLIT_RECORDS' => 5000
-  );
+);
 while (<CONFIG>) {
-   chomp;                  # no newline
-   s/#.*//;                # no comments
-   s/^\s+//;               # no leading white
-   s/\s+$//;               # no trailing white
-   next unless length;     # anything left?
-   my ($var, $value) = split(/\s*=\s*/, $_, 2);
-   $Config{uc($var)} = $value;
+    chomp;              # no newline
+    s/#.*//;            # no comments
+    s/^\s+//;           # no leading white
+    s/\s+$//;           # no trailing white
+    next unless length; # anything left?
+    my ($var, $value) = split(/\s*=\s*/, $_, 2);
+    $Config{uc($var)} = $value;
 }
 ### Command-line DEBUG value should override the one from the config file
 $Config{'DEBUG_LEVEL'} = $DEBUG if ($DEBUG > 0);
@@ -73,10 +72,9 @@ print $VERSION . "\n" if ($Config{'DEBUG_LEVEL'});
 if ($Target > 0) {
     $Config{'ERM_SPLIT'} = 'TARGET';
 }
-if ($Count > 0)
-{
+if ($Count > 0) {
     $Count = 100 if ($Count < 100);
-    $Config{'ERM_SPLIT'}         = 'RECORDS';
+    $Config{'ERM_SPLIT'} = 'RECORDS';
     $Config{'ERM_SPLIT_RECORDS'} = $Count;
 }
 
@@ -87,14 +85,12 @@ if ($Count > 0)
 exit if ($Config{'ERM_SPLIT'} eq 'NONE');
 
 
-
 ### To keep the directory structure clean, we'll put all the split files
 ### into their own directory, erm_data.
 
 ### Make a directory for the data if it doesn't exist
-if (! -e $Config{'DATA_DIR'} . '/erm_data')
-{
-    die("Failed to create the erm_data directory: !$\n") if (! mkdir('erm_data', 0775));
+if (!-e $Config{'DATA_DIR'} . '/erm_data') {
+    die("Failed to create the erm_data directory: !$\n") if (!mkdir('erm_data', 0775));
 }
 
 ### Cleanup any old files
@@ -102,10 +98,9 @@ unlink glob($Config{'DATA_DIR'} . '/erm_data/*.txt');
 
 
 ### METHOD 1: Split file based on number of records;
-if ($Config{'ERM_SPLIT'} eq 'RECORDS')
-{
+if ($Config{'ERM_SPLIT'} eq 'RECORDS') {
     my $file_num = 1;
-    my $count    = 0;
+    my $count = 0;
 
     ### Open the erm_data.txt file
     open(IN, $Config{'DATA_DIR'} . '/erm_data.txt') || die("Unable to open " . $Config{'DATA_DIR'} . "/erm_data.txt file: $!\n");
@@ -116,11 +111,9 @@ if ($Config{'ERM_SPLIT'} eq 'RECORDS')
 
     my $first = 1;
     my $Header = '';
-    while (<IN>)
-    {
+    while (<IN>) {
         ### Carry forward the header (on the first line) from the original file
-        if ($first)
-        {
+        if ($first) {
             $first = 0;
             $Header = $_;
             print ERM $Header;
@@ -134,8 +127,7 @@ if ($Config{'ERM_SPLIT'} eq 'RECORDS')
         $count++;
 
         ### If we pass the maximum record limit, close the current file and start a new one
-        if ($count > $Config{'ERM_SPLIT_RECORDS'})
-        {
+        if ($count > $Config{'ERM_SPLIT_RECORDS'}) {
             close(ERM);
 
             $count = 1;
@@ -158,8 +150,7 @@ if ($Config{'ERM_SPLIT'} eq 'RECORDS')
 ###
 ###   This is a slightly more complicated method as the entire input file
 ###   must be read in, sorted by target, then dumped out.
-if ($Config{'ERM_SPLIT'} eq 'TARGET')
-{
+if ($Config{'ERM_SPLIT'} eq 'TARGET') {
     my %erm_data;
 
     ### Open the erm_data.txt file
@@ -169,11 +160,9 @@ if ($Config{'ERM_SPLIT'} eq 'TARGET')
     my $first = 1;
     my $i = 0;
     my $Header = '';
-    while (<IN>)
-    {
+    while (<IN>) {
         ### Carry forward the header (on the first line) from the original file
-        if ($first)
-        {
+        if ($first) {
             $first = 0;
             $Header = $_;
             next;
@@ -183,7 +172,7 @@ if ($Config{'ERM_SPLIT'} eq 'TARGET')
         next if ($_ eq '');
 
         ### split the line
-        my(@elements) = split(/\|/);
+        my (@elements) = split(/\|/);
 
         ### Increment our line/record counter
         $i++;
@@ -201,16 +190,13 @@ if ($Config{'ERM_SPLIT'} eq 'TARGET')
     ### Sort the data by Target and write each target to a file
     my $target = '';
     my $file_open = 0;
-    foreach my $key (sort keys(%erm_data))
-    {
-        my($t, $i) = split(/::/, $key);
+    foreach my $key (sort keys(%erm_data)) {
+        my ($t, $i) = split(/::/, $key);
 
         ### Open a new output file when we encounter a different target
-        if ($t ne $target)
-        {
+        if ($t ne $target) {
             ### Close the previous target's output file first (if it is open)
-            if ($file_open)
-            {
+            if ($file_open) {
                 close(ERM);
                 $file_open = 0;
             }
